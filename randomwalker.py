@@ -1,4 +1,4 @@
-import pygame
+pythoimport pygame
 import random
 import numpy as np
 import time
@@ -39,8 +39,7 @@ class Blob:
         print('time is', self.time)
         if self.time > 10000:
             print("over")
-            self.x = 100
-            self.y = 100
+
         else:
             pass
 
