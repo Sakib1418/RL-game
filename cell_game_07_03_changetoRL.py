@@ -28,7 +28,7 @@ BLUE = (70,70,150)
 RED = (150,70,70)
 BLACK = (0,0,0)
 WHITE = (255,255,255)
-FPS = 3
+FPS = 10
 
 reg_mean = 5
 reg_std = 3
@@ -43,7 +43,7 @@ unattached_size = 5
 attached_size = 20
 
 big_step = 100
-small_step = 10
+small_step = 25
 
 
 
@@ -107,7 +107,7 @@ class Blob:
         self.curr_time = time.time() - start_time
         self.age = self.curr_time - self.birthday
         # cond = random.choices((True,False),weights=(reg_probablity,100-reg_probablity))[0]
-        if (self.regenerate_time-1 < self.age < self.regenerate_time+1) and self.stuck and self.colour == RED:
+        if (self.regenerate_time-.5 < self.age < self.regenerate_time+.5) and self.stuck and self.colour == RED:
             new_blob = Blob(
                 RED, 
                 WIDTH,
@@ -150,6 +150,7 @@ class Game:
         self.red_blob= [redblob for redblob in self.slow_red_blobs if redblob.colour == RED and redblob.stuck]
         self.blue_blob = [blueblob for blueblob in self.slow_red_blobs if blueblob.colour == BLUE]
         self.convert_probability = 0.5
+        self.score = 0
         self.clock = pygame.time.Clock()
         self.game_display = pygame.display.set_mode((WIDTH, HEIGHT))
         pygame.init()
@@ -186,6 +187,8 @@ class Game:
         text = 'Chemical Dosage: '+ str(self.convert_probability)
         self.draw_text(text,font,WHITE,20,80)
 
+        pygame.display.update()
+
     def play_step(self):
         pygame.init()
         for event in pygame.event.get():
@@ -208,30 +211,34 @@ class Game:
             if event.type == pygame.QUIT:
                 print('pressed quit')
                 print('current score: ', len(self.blue_blob))
-                quit()               
-            if len(self.slow_red_blobs) > 70:
-                print('Maximum blob reached :O ')
-                print('current score: ', len(self.blue_blob))
-                quit()
-            if len(self.slow_red_blobs) <1:
-                print('All blob died :( ')
-                quit()
-            if time.time() - start_time >= 30:
-                print('time out!!!')
-                print('score is: ', len(self.blue_blob))
-                quit()
-            # print(len(self.red_blob))
-            if len(self.red_blob) <= 0 and time.time() - start_time >= 10:
-                print('all differentiated!!!')
-                print('score is: ', len(self.blue_blob))
-                quit()
+                quit()  
+
+        game_over = False
+
+        if len(self.slow_red_blobs) > 70:
+            print('Maximum blob reached ') 
+            game_over = True
+
+        if len(self.slow_red_blobs) <1:
+            print('All blob died :( ')
+            game_over = True
+        if time.time() - start_time >= 30:
+            print('time out!!!')
+            
+            game_over = True
+        if len(self.red_blob) <= 0 and time.time() - start_time >= 10:
+            print('all differentiated!!!')
+            game_over = True
 
         self._update_ui()
-
-        pygame.display.update()
-
         self.clock.tick(FPS)
         space.step(1/FPS)
+
+        self.score = len(self.blue_blob)
+
+        return game_over, self.score
+
+
 
 
     
@@ -250,14 +257,14 @@ if __name__ == '__main__':
     game = Game(slow_red_blobs)
 
     while True:
-        # game_over, score = game.play_step()
-        game.play_step()
+        game_over, score = game.play_step()
 
-        # if game_over == True:
-        #     break
-
-        # print('final score')
-
-        # pygame.quit()
+        if game_over == True:
+            break
+        
+    print('Final Score', score)
+        
+        
+    pygame.quit()
 
 
